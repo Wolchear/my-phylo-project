@@ -52,6 +52,7 @@ def main() -> None:
     df = pd.read_csv(args.input, sep="\t", header=None, names=cols)
     df['tax_name'] = df['stitle'].str.extract(r'\[([^\]]+)\]')
     df_filt = df[
+        (df["pident"] >= 60) &
         (df["qcovs"] >= args.min_cov) &
         (df["evalue"] <= args.e_value)
     ].copy()

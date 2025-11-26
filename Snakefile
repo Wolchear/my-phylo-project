@@ -1,7 +1,7 @@
 DATA_DIR = 'data'
 QUERIES_DIR = f"{DATA_DIR}/queries"
 TAX_DB = 'tax_db'
-TARGET_PROTEINS = ["srpx2", "foxp1", "foxp2", "slitrk6", "dcdc2"]
+TARGET_PROTEINS = ["srpx2", "foxp1", "foxp2", "slitrk6", "dcdc2", "avpr1a", "cntp2"]
 QUERY_FILES = expand("{q_dir}/{target}.fasta", q_dir=QUERIES_DIR, target=TARGET_PROTEINS)
 
 QC_SCRIPT = "workflows/scripts/hit_qc.py"
