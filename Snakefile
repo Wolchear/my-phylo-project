@@ -22,10 +22,16 @@ rule all:
             "data/fasta/{gene}.fasta", gene=TARGET_PROTEINS
         ),
         expand(
-            "output/alignments/{gene}.afa", gene=TARGET_PROTEINS
+            "output/alignments/{gene}.afa", gene=TARGET_PROTEINS,
         ),
         expand(
             "output/alignments_html/{gene}.html", gene=TARGET_PROTEINS
+        ),
+        expand(
+            "output/trimmed_alignments/{gene}.clipkit.afa", gene=TARGET_PROTEINS
+        ),
+        expand(
+            "output/trimmed_alignments_html/{gene}.html", gene=TARGET_PROTEINS
         )
 
 rule set_taxdb:
@@ -127,6 +133,27 @@ rule afa_to_html:
         "output/alignments_html/{gene}.html"
     shell:
         """
-        mview -in fasta -ruler on -html head -css on -bold -coloring any {input} > {output}
+        mview -in fasta -label2 -ruler on -html head -css on -coloring any {input} > {output}
         """
-        
+
+rule trim_afa:
+    input:
+        rules.mafft_align.output
+    output:
+        "output/trimmed_alignments/{gene}.clipkit.afa"
+    log:
+        "logs/clipkit/{gene}.log"
+    shell:
+        """
+        clipkit {input} -m kpic-smart-gap -o {output} >{log} 2>&1
+        """
+
+rule trimmed_afa_to_html:
+    input:
+        rules.trim_afa.output
+    output:
+        "output/trimmed_alignments_html/{gene}.html"
+    shell:
+        """
+        mview -in fasta -label2 -ruler on -html head -css on -coloring any {input} > {output}
+        """
