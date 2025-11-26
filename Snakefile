@@ -20,6 +20,12 @@ rule all:
         ),
         expand(
             "data/fasta/{gene}.fasta", gene=TARGET_PROTEINS
+        ),
+        expand(
+            "output/alignments/{gene}.afa", gene=TARGET_PROTEINS
+        ),
+        expand(
+            "output/alignments_html/{gene}.html", gene=TARGET_PROTEINS
         )
 
 rule set_taxdb:
@@ -103,3 +109,24 @@ rule fetch_fasta:
         """
         python3 {params.script} -i {input} -o {output} -db {params.db}
         """
+
+rule mafft_align:
+    input:
+        rules.fetch_fasta.output
+    output:
+        "output/alignments/{gene}.afa"
+    shell:
+        """
+        mafft --localpair --maxiterate 1000 --thread 5 {input} > {output}
+        """
+
+rule afa_to_html:
+    input:
+        rules.mafft_align.output
+    output:
+        "output/alignments_html/{gene}.html"
+    shell:
+        """
+        mview -in fasta -ruler on -html head -css on -bold -coloring any {input} > {output}
+        """
+        
