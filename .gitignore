@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Snakemake
+.snakemake/
+snakemake.log
+*.log
+
+# Data & results
+tax_db/*
+*.tsv
+*.faa
+*.fasta
+*.fa
+*.aln
+*.afa
+
+# Conda/mamba caches
+.conda/
+.mamba/
+
+# BLAST databases
+*.pin
+*.phr
+*.psq
+*.pal
+*.nin
+*.nhr
+*.nsq

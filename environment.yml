@@ -1,0 +1,12 @@
+name: gen_project
+
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.12
+  - pandas
+  - snakemake
+  - blast=2.17.0
