@@ -42,17 +42,24 @@ def parse_args() -> argparse.Namespace:
         help="Include only one best sequence for each unique taxa (default: False)"
     )
     
+    parser.add_argument(
+        "--pident",
+        type=int,
+        default=60,
+        help="Include only one best sequence for each unique taxa (default: False)"
+    )
+    
     return parser.parse_args()
 
 def main() -> None:
     args = parse_args()
 
-    cols = ["sseqid", "sscinames", "pident", "qcovs", "evalue", "bitscore", "stitle"]
+    cols = ["sseqid", "length", "pident", "qcovs", "evalue", "bitscore", "stitle"]
 
     df = pd.read_csv(args.input, sep="\t", header=None, names=cols)
     df['tax_name'] = df['stitle'].str.extract(r'\[([^\]]+)\]')
     df_filt = df[
-        (df["pident"] >= 60) &
+        (df["pident"] >= args.pident) &
         (df["qcovs"] >= args.min_cov) &
         (df["evalue"] <= args.e_value)
     ].copy()

@@ -7,6 +7,10 @@ channels:
 
 dependencies:
   - python=3.12
-  - pandas
-  - snakemake
+  - pandas>=2.3.3
+  - snakemake>=9.13.7
   - blast=2.17.0
+  - mafft>=7.525
+  - clipkit=2.7.0
+  - miew=1.68
+  - entrez-direct=24.0

@@ -5,7 +5,7 @@ TARGET_PROTEINS = ["srpx2", "foxp1", "foxp2", "slitrk6", "dcdc2", "avpr1a", "cnt
 QUERY_FILES = expand("{q_dir}/{target}.fasta", q_dir=QUERIES_DIR, target=TARGET_PROTEINS)
 
 QC_SCRIPT = "workflows/scripts/hit_qc.py"
-FIND_SHARED_ID = "workflows/scripts/find_shared_tax.py"
+MODIFY_IDS_SCRIPT = "workflows/scripts/modify_ids.py"
 FETCH_FASTA_SCRIPT = "workflows/scripts/fetch_fasta.py"
 rule all:
     input:
@@ -16,10 +16,10 @@ rule all:
             "data/filtered_hits/{gene}.tsv", gene=TARGET_PROTEINS
         ),
         expand(
-            "data/shared_taxa_hits/{gene}.tsv", gene=TARGET_PROTEINS
+            "data/fasta/{gene}.fasta", gene=TARGET_PROTEINS
         ),
         expand(
-            "data/fasta/{gene}.fasta", gene=TARGET_PROTEINS
+            "data/fasta_modified/{gene}.fasta", gene=TARGET_PROTEINS
         ),
         expand(
             "output/alignments/{gene}.afa", gene=TARGET_PROTEINS,
@@ -55,7 +55,7 @@ rule run_blastp:
     output:
         tsv="data/blast/{gene}.tsv"
     params:
-        db="refseq_protein",
+        db="tax_db/refseq_primates",
         tax="txid9443[orgn]",
         tax_db=TAX_DB
     log:
@@ -67,13 +67,11 @@ rule run_blastp:
         blastp \
             -query {input.fasta} \
             -db {params.db} \
-            -remote \
-            -entrez_query "{params.tax}" \
             -evalue 1e-10 \
             -qcov_hsp_perc 50 \
             -max_target_seqs 500 \
             -out {output.tsv} \
-            -outfmt "6 sseqid sscinames pident qcovs evalue bitscore stitle" \
+            -outfmt "6 sseqid length pident qcovs evalue bitscore stitle" \
             2>> {log}
         """
 
@@ -83,29 +81,15 @@ rule blast_results_QC:
     output:
         "data/filtered_hits/{gene}.tsv"
     params:
-        qc_script=QC_SCRIPT
+        script=QC_SCRIPT
     shell:
         """
-        python3 {params.qc_script} -i {input} -o {output} --drop_duplicates
-        """
-
-rule find_shared_ids:
-    input:
-        rules.blast_results_QC.output
-    output:
-        "data/shared_taxa_hits/{gene}.tsv"
-    params:
-        script=FIND_SHARED_ID,
-        input_dir = subpath(rules.blast_results_QC.output[0], parent=True),
-        output_dir = "data/shared_taxa_hits"
-    shell:
-        """
-        python3 {params.script} -d {params.input_dir} -o {params.output_dir}
+        python3 {params.script} -i {input} -o {output} --drop_duplicates
         """
 
 rule fetch_fasta:
     input:
-        "data/shared_taxa_hits/{gene}.tsv"
+        rules.blast_results_QC.output
     output:
         "data/fasta/{gene}.fasta"
     params:
@@ -113,12 +97,24 @@ rule fetch_fasta:
         db="protein"
     shell:
         """
-        python3 {params.script} -i {input} -o {output} -db {params.db}
+        python3 {params.script} -i {input} -o {output} -db {params.db} --local
+        """
+
+rule modify_ids:
+    input:
+        rules.fetch_fasta.output
+    output:
+        "data/fasta_modified/{gene}.fasta"
+    params:
+        script=MODIFY_IDS_SCRIPT
+    shell:
+        """
+         python3 {params.script} -i {input} -o {output}
         """
 
 rule mafft_align:
     input:
-        rules.fetch_fasta.output
+        rules.modify_ids.output
     output:
         "output/alignments/{gene}.afa"
     shell:
