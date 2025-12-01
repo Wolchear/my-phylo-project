@@ -1,33 +1,65 @@
 from snakemake.utils import min_version
 min_version("6.0")
 
-DATA_DIR = 'data'
-QUERIES_DIR = f"{DATA_DIR}/queries"
-TARGET_PROTEINS = ["srpx2", "foxp1", "foxp2", "slitrk6", "dcdc2", "avpr1a", "cntp2"]
-QUERY_FILES = expand("{q_dir}/{target}.fasta", q_dir=QUERIES_DIR, target=TARGET_PROTEINS)
+configfile: "config.yaml"
+
+def get_path(BASE, key):
+    return f"{BASE['base_root']}/{BASE['dirs'][key]}"
+
+OUTPUT = config["output"]
+SUFFIX = config["suffix"]
+TARGETS = config["targets"]
+
+ALIGNMENT_DIR = get_path(OUTPUT, "alignments")
+TRIMMED_ALIGNMENT_DIR = get_path(OUTPUT, "trimmed_alignments")
+ALIGNMENT_REPORTS_DIR = get_path(OUTPUT, "alignments_reports")
+TRIMMED_ALIGNMENT_REPORTS_DIR = get_path(OUTPUT, "trimmed_alignments_reports")
 
 rule all:
     input:
-        expand("output/alignments/{gene}.afa", gene=TARGET_PROTEINS),
-        expand("output/trimmed_alignments/{gene}.clipkit.afa", gene=TARGET_PROTEINS),
+        # output/alignments/{target}.afa
         expand(
-            "output/{dirs}/{gene}.html",
-            gene=TARGET_PROTEINS,
-            dirs=['alignments_html', 'trimmed_alignments_html']
+            "{align_dir}/{target}.{ext}",
+            align_dir=ALIGNMENT_DIR,
+            target=TARGETS,
+            ext=SUFFIX["alignment"],
+        ),
+        # output/trimmed_alignments/{target}.clipkit.afa
+        expand(
+            "{trim_dir}/{target}.{ext}",
+            trim_dir=TRIMMED_ALIGNMENT_DIR,
+            target=TARGETS,
+            ext=SUFFIX["trimmed_alignment"],
+        ),
+        # output/html_reports_dir|trimmed_html_reports_dir/{target}.html
+        expand(
+            "{dir}/{target}.html",
+            dir=[
+                ALIGNMENT_REPORTS_DIR,
+                TRIMMED_ALIGNMENT_REPORTS_DIR,
+            ],
+            target=TARGETS,
         )
 
+WORKFLOW = config['workflow']
+RULES_DIR = get_path(WORKFLOW, "rules")
+
 module blast:
-    snakefile: "workflows/rules/blast.smk"
+    snakefile: f"{RULES_DIR}/blast.smk"
+    config: config
 use rule * from blast
 
 module db:
-    snakefile: "workflows/rules/db.smk"
+    snakefile: f"{RULES_DIR}/db.smk"
+    config: config
 use rule * from db as set_*
 
 module fasta_manipulations:
-    snakefile: "workflows/rules/fasta_mainpulations.smk"
+    snakefile: f"{RULES_DIR}/fasta_manipulations.smk"
+    config: config
 use rule * from fasta_manipulations
 
 module mafft_alignments:
-    snakefile: "workflows/rules/mafft_alignments.smk"
+    snakefile: f"{RULES_DIR}/mafft_alignments.smk"
+    config: config
 use rule * from mafft_alignments

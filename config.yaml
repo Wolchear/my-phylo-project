@@ -1,0 +1,54 @@
+data:
+  base_root: "data"
+  dirs:
+    queries: "queries"
+    blast: "blast"
+    filtered_hits: "filtered_hits"
+    fasta: 'fasta'
+    fasta_modified: 'fasta_modified'
+
+output:
+  base_root: "output"
+  dirs:
+    alignments: "alignments"
+    trimmed_alignments: "trimmed_alignments"
+    alignments_reports: "alignments_html"
+    trimmed_alignments_reports: 'trimmed_alignments_html'
+
+workflow:
+  base_root: "workflows"
+  dirs:
+    rules: "rules"
+    scripts: "scripts"
+
+suffix:
+  fasta: "fasta"
+  alignment: "afa"
+  trimmed_alignment: "clipkit.afa"
+
+db:
+  base_root: "tax_db"
+  name: "refseq_primates"
+
+targets:
+  - srpx2
+  - foxp1
+  - foxp2
+  - slitrk6
+  - dcdc2
+  - avpr1a
+  - cntp2
+
+blast:
+  evalue: 1e-10
+  qcov: 50
+  max_target_seqs: 500
+  outfmt: "6 sseqid length pident qcovs evalue bitscore stitle"
+
+mafft:
+  mode: "--localpair"
+  max_iter: 1000
+  threads: 5
+
+clipkit:
+  mode: "kpic-smart-gap"

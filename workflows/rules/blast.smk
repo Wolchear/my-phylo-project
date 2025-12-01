@@ -1,22 +1,38 @@
-DATA_DIR = 'data'
-QUERIES_DIR = f"{DATA_DIR}/queries"
-TAX_DB = 'tax_db'
-TARGET_PROTEINS = ["srpx2", "foxp1", "foxp2", "slitrk6", "dcdc2", "avpr1a", "cntp2"]
-QUERY_FILES = expand("{q_dir}/{target}.fasta", q_dir=QUERIES_DIR, target=TARGET_PROTEINS)
+def get_path(BASE, key):
+    return f"{BASE['base_root']}/{BASE['dirs'][key]}"
 
-QC_SCRIPT = "workflows/scripts/hit_qc.py"
+DATA = config["data"]
+QUERIES_DIR = get_path(DATA, 'queries')
+
+DATA_BASE = config["db"]['base_root']
+DB_NAME = f"{DATA_BASE}/{config['db']['name']}"
+
+BLAST_OUT_DIR = get_path(DATA, 'blast')
+FILTERED_HITS_DIR = get_path(DATA, 'filtered_hits')
+
+WORKFLOW = config['workflow']
+SCRIPTS = get_path(WORKFLOW, 'scripts')
+QC_SCRIPT = f"{SCRIPTS}/hit_qc.py"
+
+BLAST_PARAMS = config['blast']
+
+SUFFIX = config['suffix']
+FASTA_SUFFIX = SUFFIX['fasta']
 
 rule run_blastp:
     input:
-        fasta="data/queries/{gene}.fasta",
-        taxdb_btd=f"{TAX_DB}/taxdb.btd",
-        taxdb_bti=f"{TAX_DB}/taxdb.bti"
+        fasta = f"{QUERIES_DIR}/{{gene}}.{FASTA_SUFFIX}",
+        taxdb_btd=f"{DATA_BASE}/taxdb.btd",
+        taxdb_bti=f"{DATA_BASE}/taxdb.bti"
     output:
-        tsv="data/blast/{gene}.tsv"
+        tsv=f"{BLAST_OUT_DIR}/{{gene}}.tsv"
     params:
-        db="tax_db/refseq_primates",
-        tax="txid9443[orgn]",
-        tax_db=TAX_DB
+        db=DB_NAME,
+        tax_db=DATA_BASE,
+        e_value=BLAST_PARAMS['evalue'],
+        max_seq=BLAST_PARAMS['max_target_seqs'],
+        qcov =BLAST_PARAMS['qcov'],
+        outfmt=BLAST_PARAMS['outfmt']
     log:
         "logs/blast/{gene}.log"
     shell:
@@ -26,19 +42,19 @@ rule run_blastp:
         blastp \
             -query {input.fasta} \
             -db {params.db} \
-            -evalue 1e-10 \
-            -qcov_hsp_perc 50 \
-            -max_target_seqs 500 \
+            -evalue {params.e_value} \
+            -qcov_hsp_perc {params.qcov} \
+            -max_target_seqs {params.max_seq} \
             -out {output.tsv} \
-            -outfmt "6 sseqid length pident qcovs evalue bitscore stitle" \
+            -outfmt "{params.outfmt}" \
             2>> {log}
         """
 
 rule blast_results_QC:
     input:
-        "data/blast/{gene}.tsv"
+        rules.run_blastp.output
     output:
-        "data/filtered_hits/{gene}.tsv"
+        f"{FILTERED_HITS_DIR}/{{gene}}.tsv"
     params:
         script=QC_SCRIPT
     shell:
