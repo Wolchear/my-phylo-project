@@ -49,7 +49,7 @@ def process_header(line: str) -> str:
     acc = parts[0]
     rest = parts[1] if len(parts) > 1 else " "
 
-    new_header = f">{tax_name}|{acc} {rest}\n"
+    new_header = f">{tax_name} {acc} {rest}\n"
 
     return new_header
 

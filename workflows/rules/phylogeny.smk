@@ -6,7 +6,6 @@ def get_species(file: str):
     group_idx = OUTGROUP["group_by_idx"]          # 2
     group_value = OUTGROUP["group_by_value"]      # "Lemuriformes"
     species_column = OUTGROUP["species_column"]   # 0
-    acc_column = OUTGROUP["acc_column"]           # 1
     species = []
 
     with open(file, 'r') as fh:
@@ -17,9 +16,7 @@ def get_species(file: str):
             cols = line.split("\t")
             if cols[group_idx] == group_value:
                 species_name = cols[species_column]
-                seq_acc = cols[acc_column]
-                _id = f"{species_name}|{seq_acc}" 
-                species.append(_id)
+                species.append(species_name)
 
     return ",".join(sorted(set(species)))
 

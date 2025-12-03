@@ -7,6 +7,7 @@ ncbi = NCBITaxa()
 
 def classify_species(tax_name: str):
     canonical = tax_name.replace("_", " ").strip()
+    print(canonical)
     try:
         taxid = ncbi.get_name_translator([canonical])[canonical][0]
     except KeyError:
@@ -51,10 +52,8 @@ def main() -> None:
         for line in fh:
             if line.startswith('>'):
                 content = line.split(" ")
-                specie_id = content[0]
-                match = re.search("^>([^|]+)\|(.+)$", specie_id)
-                specie_name = match.group(1)
-                seq_acc = match.group(2)
+                specie_name = content[0][1:]
+                seq_acc = content[1]
                 infraorder, superfamily, family = classify_species(specie_name)
                 rows.append((specie_name, seq_acc, infraorder, superfamily, family))
     
