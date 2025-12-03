@@ -14,6 +14,8 @@ output:
     trimmed_alignments: "trimmed_alignments"
     alignments_reports: "alignments_html"
     trimmed_alignments_reports: 'trimmed_alignments_html'
+    taxonomy_tables: "taxonomy_tables"
+    trees: "trees"
 
 workflow:
   base_root: "workflows"
@@ -31,13 +33,29 @@ db:
   name: "refseq_primates"
 
 targets:
-  - srpx2
-  - foxp1
-  - foxp2
-  - slitrk6
-  - dcdc2
-  - avpr1a
-  - cntp2
+  srpx2:
+    meta: "sushi repeat-containing protein, SRPX2"
+  foxp1:
+    meta: "forkhead box protein P1, FOXP1"
+  foxp2:
+    meta: "forkhead box protein P2, FOXP2"
+  slitrk6:
+    meta: "SLIT and NTRK-like protein 6, slitrk6"
+  dcdc2:
+    meta: "doublecortin domain-containing protein 2, dcdc2"
+  avpr1a:
+    meta: "vasopressin receptor, V1a, avpr1a"
+  cntp2:
+    meta: "contactin-associated protein-like 2, cntp2"
+
+filters: "LOW QUALITY PROTEIN,fragment,partial"
+
+outgroup:
+  group_by_idx: 2           # Use index of column in your table
+  group_by_value: "Lemuriformes"
+  species_column: 0
+  acc_column: 1               # We will need to combine species column with acc to get
+                             # valid id for IQ tree: species|acc\s
 
 blast:
   evalue: 1e-10

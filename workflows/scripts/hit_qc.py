@@ -1,5 +1,6 @@
 import argparse
 import sys
+import re
 
 import pandas as pd
 
@@ -49,6 +50,20 @@ def parse_args() -> argparse.Namespace:
         help="Include only one best sequence for each unique taxa (default: False)"
     )
     
+    parser.add_argument(
+        "--s_filters",
+        type=str,
+        default=None,
+        help="List of keywords from title to exclude hits (default: None). If None, no stitle filtering is applied."
+    )
+    
+    parser.add_argument(
+        "--title_meta",
+        type=str,
+        default=None,
+        help="List of keywords from title to include hits (default: None). If None, no stitle filtering is applied."
+    )
+    
     return parser.parse_args()
 
 def main() -> None:
@@ -57,6 +72,18 @@ def main() -> None:
     cols = ["sseqid", "length", "pident", "qcovs", "evalue", "bitscore", "stitle"]
 
     df = pd.read_csv(args.input, sep="\t", header=None, names=cols)
+    
+    if args.s_filters is not None:
+        keywords = [k.strip() for k in args.s_filters.split(",") if k.strip()]
+        pat = "|".join(map(re.escape, keywords))
+        df = df[~df["stitle"].str.contains(pat, case=False, na=False, regex=True)]
+
+    if args.title_meta is not None:
+        keywords = [k.strip() for k in args.title_meta.split(",") if k.strip()]
+        pat = "|".join(map(re.escape, keywords))
+        df = df[df["stitle"].str.contains(pat, case=False, na=False, regex=True)]
+
+    
     df['tax_name'] = df['stitle'].str.extract(r'\[([^\]]+)\]')
     df_filt = df[
         (df["pident"] >= args.pident) &

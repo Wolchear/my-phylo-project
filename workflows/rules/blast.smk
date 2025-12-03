@@ -56,8 +56,15 @@ rule blast_results_QC:
     output:
         f"{FILTERED_HITS_DIR}/{{gene}}.tsv"
     params:
-        script=QC_SCRIPT
+        script=QC_SCRIPT,
+        filters=config['filters'],
+        title_meta=lambda wc: config["targets"][wc.gene]["meta"]
     shell:
-        """
-        python3 {params.script} -i {input} -o {output} --drop_duplicates
+        r"""
+        python3 {params.script} \
+          -i {input} \
+          -o {output} \
+          --drop_duplicates \
+          --s_filters "{params.filters}" \
+          --title_meta "{params.title_meta}"
         """
