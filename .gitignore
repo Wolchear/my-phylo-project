@@ -26,6 +26,7 @@ tax_db/*
 *.faa
 *.fasta
 *.fa
+*/trees/*
 
 # Conda/mamba caches
 .conda/

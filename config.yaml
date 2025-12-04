@@ -16,6 +16,7 @@ output:
     trimmed_alignments_reports: 'trimmed_alignments_html'
     taxonomy_tables: "taxonomy_tables"
     trees: "trees"
+    species_trees: "species_trees"
 
 workflow:
   base_root: "workflows"
@@ -31,6 +32,8 @@ suffix:
 db:
   base_root: "tax_db"
   name: "refseq_primates"
+  taxon: 9443
+  db_type: "protein"
 
 targets:
   srpx2:
@@ -68,3 +71,16 @@ mafft:
 
 clipkit:
   mode: "kpic-smart-gap"
+
+iqtree:
+  mode: "MFP"
+  bb_iter: 1000
+  threads: 4
+  keep_ident: true
+  redo: true
+
+astral:
+  seed: 692
+  exclude:
+    - foxp1
+    - foxp2

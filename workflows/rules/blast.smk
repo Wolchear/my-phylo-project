@@ -23,7 +23,8 @@ rule run_blastp:
     input:
         fasta = f"{QUERIES_DIR}/{{gene}}.{FASTA_SUFFIX}",
         taxdb_btd=f"{DATA_BASE}/taxdb.btd",
-        taxdb_bti=f"{DATA_BASE}/taxdb.bti"
+        taxdb_bti=f"{DATA_BASE}/taxdb.bti",
+        seq_db = f"{DATA_BASE}/.ready"
     output:
         tsv=f"{BLAST_OUT_DIR}/{{gene}}.tsv"
     params:

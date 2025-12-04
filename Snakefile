@@ -14,7 +14,7 @@ TRIMMED_ALIGNMENT_DIR = get_path(OUTPUT, "trimmed_alignments")
 ALIGNMENT_REPORTS_DIR = get_path(OUTPUT, "alignments_reports")
 TRIMMED_ALIGNMENT_REPORTS_DIR = get_path(OUTPUT, "trimmed_alignments_reports")
 TREE_DIR = get_path(OUTPUT, "trees")
-
+SPECIES_TREES_DIR = get_path(OUTPUT, "species_trees")
 TARGETS = sorted(config['targets'].keys())
 rule all:
     input:
@@ -45,7 +45,9 @@ rule all:
             "{dir}/{gene}.treefile",
             dir=TREE_DIR,
             gene=TARGETS,
-        )
+        ),
+        f"{SPECIES_TREES_DIR}/all_species_tree.treefile",
+        f"{SPECIES_TREES_DIR}/all_species_tree.excluded.treefile"
 
 WORKFLOW = config['workflow']
 RULES_DIR = get_path(WORKFLOW, "rules")
