@@ -40,3 +40,7 @@ tax_db/*
 *.nin
 *.nhr
 *.nsq
+taxdump.tar.gz
+output/species_trees/all_species_tree.excluded.treefile
+output/species_trees/all_species_tree.treefile
+workflows/scripts/find_shared_tax.py
